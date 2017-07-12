@@ -33,7 +33,7 @@ ssh_keyscan_for_user() {
 }
 
 transfer_ownership() {
-  chown -R gpadmin:gpadmin gpdb_src
+  #chown -R gpadmin:gpadmin gpdb_src
   [ -d /usr/local/gpdb ] && chown -R gpadmin:gpadmin /usr/local/gpdb
   [ -d /usr/local/greenplum-db-devel ] && chown -R gpadmin:gpadmin /usr/local/greenplum-db-devel
   chown -R gpadmin:gpadmin /home/gpadmin
@@ -53,14 +53,14 @@ set_limits() {
 }
 
 setup_gpadmin_user() {
-  groupadd supergroup
+  #groupadd supergroup
   case "$TEST_OS" in
     sles)
       groupadd gpadmin
       /usr/sbin/useradd -G gpadmin,supergroup,tty gpadmin
       ;;
-    centos)
-      /usr/sbin/useradd -G supergroup,tty gpadmin
+    centos|ubuntu)
+      #/usr/sbin/useradd -G supergroup,tty gpadmin
       ;;
     *) echo "Unknown OS: $TEST_OS"; exit 1 ;;
   esac
@@ -71,7 +71,7 @@ setup_gpadmin_user() {
 }
 
 setup_sshd() {
-  test -e /etc/ssh/ssh_host_key || ssh-keygen -f /etc/ssh/ssh_host_key -N '' -t rsa1
+  test -e /etc/ssh/ssh_host_key || ssh-keygen -f /etc/ssh/ssh_host_key -N '' -t rsa
   test -e /etc/ssh/ssh_host_rsa_key || ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa
   test -e /etc/ssh/ssh_host_dsa_key || ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
 
@@ -86,6 +86,11 @@ setup_sshd() {
 
   setup_ssh_for_user root
 
+  case "$TEST_OS" in
+    ubuntu)
+      [ -d /var/run/sshd ] || mkdir /var/run/sshd
+      ;;
+  esac
   /usr/sbin/sshd
 
   ssh_keyscan_for_user root
@@ -99,6 +104,10 @@ determine_os() {
   fi
   if [ -f /etc/os-release ] && grep -q '^NAME=.*SLES' /etc/os-release ; then
     echo "sles"
+    return
+  fi
+  if [ -f /etc/os-release ] && grep -q '^NAME=.*Ubuntu' /etc/os-release ; then
+    echo "ubuntu"
     return
   fi
   echo "Could not determine operating system type" >/dev/stderr

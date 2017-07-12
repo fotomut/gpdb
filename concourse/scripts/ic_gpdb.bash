@@ -53,7 +53,7 @@ function _main() {
         exit 1
     fi
 
-    if [ "$TEST_OS" != "centos" -a "$TEST_OS" != "sles" ]; then
+    if [ "$TEST_OS" != "centos" -a "$TEST_OS" != "sles" -a "$TEST_OS" != "ubuntu" ]; then
         echo "FATAL: TEST_OS is set to an invalid value: $TEST_OS"
 	echo "Configure TEST_OS to be centos or sles"
         exit 1
@@ -76,16 +76,16 @@ function _main() {
       ln -sf "$libperl_path" /lib64/libperl.so || return 1
     fi
 
-    time configure
-    time install_gpdb
+    #time configure
+    #time install_gpdb
     time setup_gpadmin_user
     time make_cluster
     time gen_env
-    time run_test
+    #time run_test
 
-    if [ "${TEST_BINARY_SWAP}" == "true" ]; then
-        time ./gpdb_src/concourse/scripts/test_binary_swap_gpdb.bash
-    fi
+    #if [ "${TEST_BINARY_SWAP}" == "true" ]; then
+    #    time ./gpdb_src/concourse/scripts/test_binary_swap_gpdb.bash
+    #fi
 }
 
 _main "$@"
